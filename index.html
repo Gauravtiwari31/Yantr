@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Astronomical Instruments Calculator</title>
+    <meta name="description" content="Generate dimensions and 3D visualizations for traditional Indian astronomical instruments (Yantras) based on geographic location">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- React and ReactDOM CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel Standalone for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        #root {
+            min-height: 100vh;
+        }
+        
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <!-- Root element where React app will mount -->
+    <div id="root"></div>
+
+    <!-- Main Application Script -->
+    <script type="text/babel">
+        const { useState, useRef, useEffect } = React;
+
+        // Lucide Icon Components
+        const Calculator = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="4" y="2" width="16" height="20" rx="2"/>
+                <line x1="8" y1="6" x2="16" y2="6"/>
+                <line x1="16" y1="10" x2="16" y2="10"/>
+                <line x1="8" y1="10" x2="8" y2="10"/>
+                <line x1="12" y1="10" x2="12" y2="10"/>
+                <line x1="8" y1="14" x2="8" y2="18"/>
+                <line x1="12" y1="14" x2="12" y2="14"/>
+                <line x1="12" y1="18" x2="12" y2="18"/>
+                <line x1="16" y1="14" x2="16" y2="18"/>
+            </svg>
+        );
+
+        const MapPin = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+            </svg>
+        );
+
+        const Ruler = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.4 2.4 0 0 1 0-3.4l2.6-2.6a2.4 2.4 0 0 1 3.4 0z"/>
+                <path d="m14.5 12.5 2-2"/>
+                <path d="m11.5 9.5 2-2"/>
+                <path d="m8.5 6.5 2-2"/>
+                <path d="m17.5 15.5 2-2"/>
+            </svg>
+        );
+
+        const Box = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+        );
+
+        // Yantra Calculator Module
+        class YantraCalculator {
+          constructor(latitude, longitude, baseSize = 10) {
+            this.latitude = latitude;
+            this.longitude = longitude;
+            this.baseSize = baseSize;
+            this.phi = latitude * Math.PI / 180;
+          }
+
+          calculateSamratYantra() {
+            const gnomonHeight = this.baseSize;
+            const gnomonBase = gnomonHeight / Math.tan(this.phi);
+            const hypotenuse = Math.sqrt(gnomonHeight * gnomonHeight + gnomonBase * gnomonBase);
+            const dialRadius = gnomonBase * 1.5;
+            
+            return {
+              name: "Samrat Yantra",
+              type: "sundial",
+              dimensions: {
+                gnomonHeight,
+                gnomonBase,
+                hypotenuse,
+                dialRadius,
+                gnomonAngle: this.latitude,
+                quadrantArcLength: dialRadius * Math.PI / 2
+              },
+              description: "Giant equinoctial sundial with gnomon aligned to Earth's axis"
+            };
+          }
+
+          calculateRamaYantra() {
+            const cylinderRadius = this.baseSize;
+            const cylinderHeight = cylinderRadius * 0.3;
+            const pillarHeight = cylinderHeight * 1.5;
+            
+            return {
+              name: "Rama Yantra",
+              type: "altitude_azimuth",
+              dimensions: {
+                cylinderRadius,
+                cylinderHeight,
+                pillarHeight,
+                sectorAngle: 90,
+                numberOfSectors: 4
+              },
+              description: "Used to measure altitude and azimuth of celestial objects"
+            };
+          }
+
+          calculateChakraYantra() {
+            const outerRadius = this.baseSize * 0.8;
+            const innerRadius = outerRadius * 0.15;
+            const thickness = outerRadius * 0.05;
+            
+            return {
+              name: "Chakra Yantra",
+              type: "angular_measurement",
+              dimensions: {
+                outerRadius,
+                innerRadius,
+                thickness,
+                graduations: 360,
+                crossBarLength: outerRadius * 2,
+                poleHeight: outerRadius * 1.5
+              },
+              description: "Metal ring instrument for measuring angular positions"
+            };
+          }
+
+          calculateJaiPrakashYantra() {
+            const hemisphereRadius = this.baseSize;
+            const rimWidth = hemisphereRadius * 0.1;
+            const crossWireSpacing = hemisphereRadius * 0.2;
+            
+            return {
+              name: "Jai Prakash Yantra",
+              type: "celestial_coordinates",
+              dimensions: {
+                hemisphereRadius,
+                rimWidth,
+                crossWireSpacing,
+                numberOfMarbleSlabs: 2,
+                depthOfHemisphere: hemisphereRadius
+              },
+              description: "Hemispherical sundial showing celestial coordinates"
+            };
+          }
+
+          calculateDigamsaYantra() {
+            const baseRadius = this.baseSize;
+            const pillarHeight = baseRadius * 2;
+            const circleRadius = baseRadius * 0.9;
+            
+            return {
+              name: "Digamsa Yantra",
+              type: "azimuth",
+              dimensions: {
+                baseRadius,
+                pillarHeight,
+                circleRadius,
+                compassDivisions: 360,
+                sightingBarLength: circleRadius * 2
+              },
+              description: "Used to measure azimuth angles of celestial bodies"
+            };
+          }
+
+          calculateAllYantras() {
+            return [
+              this.calculateSamratYantra(),
+              this.calculateRamaYantra(),
+              this.calculateChakraYantra(),
+              this.calculateJaiPrakashYantra(),
+              this.calculateDigamsaYantra()
+            ];
+          }
+        }
+
+        // 2D Diagram Generator Component
+        const DiagramGenerator = ({ yantra }) => {
+          const canvasRef = useRef(null);
+
+          useEffect(() => {
+            if (!canvasRef.current || !yantra) return;
+            
+            const canvas = canvasRef.current;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            const scale = 20;
+            
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, 0, width, height);
+            
+            ctx.strokeStyle = '#60a5fa';
+            ctx.fillStyle = '#3b82f6';
+            ctx.lineWidth = 2;
+            ctx.font = '12px monospace';
+            
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            if (yantra.type === 'sundial') {
+              const h = yantra.dimensions.gnomonHeight * scale;
+              const b = yantra.dimensions.gnomonBase * scale;
+              
+              ctx.beginPath();
+              ctx.moveTo(centerX - b/2, centerY + 50);
+              ctx.lineTo(centerX - b/2, centerY + 50 - h);
+              ctx.lineTo(centerX + b/2, centerY + 50);
+              ctx.closePath();
+              ctx.fill();
+              ctx.stroke();
+              
+              ctx.beginPath();
+              ctx.arc(centerX - b/2, centerY + 50, yantra.dimensions.dialRadius * scale, 0, Math.PI, true);
+              ctx.stroke();
+              
+              ctx.fillStyle = '#60a5fa';
+              ctx.fillText(`H: ${yantra.dimensions.gnomonHeight.toFixed(2)}m`, centerX - b/2 - 60, centerY + 20);
+              ctx.fillText(`B: ${yantra.dimensions.gnomonBase.toFixed(2)}m`, centerX - 30, centerY + 70);
+              ctx.fillText(`Angle: ${yantra.dimensions.gnomonAngle.toFixed(1)}°`, centerX + b/2 + 10, centerY + 30);
+              
+            } else if (yantra.type === 'altitude_azimuth') {
+              const r = yantra.dimensions.cylinderRadius * scale;
+              
+              ctx.beginPath();
+              ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+              ctx.stroke();
+              
+              for (let i = 0; i < 4; i++) {
+                const angle = i * Math.PI / 2;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(centerX + r * Math.cos(angle), centerY + r * Math.sin(angle));
+                ctx.stroke();
+              }
+              
+              ctx.fillStyle = '#60a5fa';
+              ctx.fillText(`R: ${yantra.dimensions.cylinderRadius.toFixed(2)}m`, centerX + r + 10, centerY);
+              ctx.fillText(`4 Sectors`, centerX - 30, centerY - r - 10);
+              
+            } else if (yantra.type === 'angular_measurement') {
+              const outer = yantra.dimensions.outerRadius * scale;
+              const inner = yantra.dimensions.innerRadius * scale;
+              
+              ctx.beginPath();
+              ctx.arc(centerX, centerY, outer, 0, Math.PI * 2);
+              ctx.stroke();
+              
+              ctx.beginPath();
+              ctx.arc(centerX, centerY, inner, 0, Math.PI * 2);
+              ctx.stroke();
+              
+              ctx.beginPath();
+              ctx.moveTo(centerX - outer, centerY);
+              ctx.lineTo(centerX + outer, centerY);
+              ctx.stroke();
+              
+              ctx.fillStyle = '#60a5fa';
+              ctx.fillText(`R: ${yantra.dimensions.outerRadius.toFixed(2)}m`, centerX + outer + 10, centerY);
+              
+            } else if (yantra.type === 'celestial_coordinates') {
+              const r = yantra.dimensions.hemisphereRadius * scale;
+              
+              ctx.beginPath();
+              ctx.arc(centerX, centerY + 50, r, Math.PI, 0, true);
+              ctx.stroke();
+              
+              ctx.strokeStyle = '#fbbf24';
+              ctx.lineWidth = 3;
+              ctx.beginPath();
+              ctx.arc(centerX, centerY + 50, r, Math.PI, 0, true);
+              ctx.stroke();
+              ctx.lineWidth = 2;
+              ctx.strokeStyle = '#60a5fa';
+              
+              ctx.fillStyle = '#60a5fa';
+              ctx.fillText(`Hemisphere R: ${yantra.dimensions.hemisphereRadius.toFixed(2)}m`, centerX - 80, centerY + 80);
+              
+            } else if (yantra.type === 'azimuth') {
+              const r = yantra.dimensions.circleRadius * scale;
+              const h = yantra.dimensions.pillarHeight * scale;
+              
+              ctx.beginPath();
+              ctx.arc(centerX, centerY + 50, r, 0, Math.PI * 2);
+              ctx.stroke();
+              
+              ctx.fillRect(centerX - 5, centerY + 50 - h, 10, h);
+              
+              ctx.strokeStyle = '#fbbf24';
+              ctx.beginPath();
+              ctx.moveTo(centerX - r, centerY + 50 - h);
+              ctx.lineTo(centerX + r, centerY + 50 - h);
+              ctx.stroke();
+              ctx.strokeStyle = '#60a5fa';
+              
+              ctx.fillStyle = '#60a5fa';
+              ctx.fillText(`H: ${yantra.dimensions.pillarHeight.toFixed(2)}m`, centerX + 20, centerY + 20);
+            }
+            
+          }, [yantra]);
+
+          return (
+            <canvas 
+              ref={canvasRef} 
+              width={400} 
+              height={300}
+              className="border border-blue-500 rounded bg-slate-900"
+            />
+          );
+        };
+
+        // 3D Model Renderer Component
+        const Model3D = ({ yantra }) => {
+          const mountRef = useRef(null);
+          const sceneRef = useRef(null);
+          const rendererRef = useRef(null);
+          const cameraRef = useRef(null);
+          const mouseRef = useRef({ isDown: false, x: 0, y: 0 });
+
+          useEffect(() => {
+            if (!mountRef.current || !yantra) return;
+
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0f172a);
+            sceneRef.current = scene;
+
+            const camera = new THREE.PerspectiveCamera(50, 400 / 300, 0.1, 1000);
+            camera.position.set(20, 20, 20);
+            camera.lookAt(0, 0, 0);
+            cameraRef.current = camera;
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(400, 300);
+            mountRef.current.appendChild(renderer.domElement);
+            rendererRef.current = renderer;
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(10, 10, 10);
+            scene.add(directionalLight);
+
+            const gridHelper = new THREE.GridHelper(30, 30, 0x444444, 0x222222);
+            scene.add(gridHelper);
+
+            // Build 3D model
+            if (yantra.type === 'sundial') {
+              const h = yantra.dimensions.gnomonHeight;
+              const b = yantra.dimensions.gnomonBase;
+              
+              const shape = new THREE.Shape();
+              shape.moveTo(-b/2, 0);
+              shape.lineTo(-b/2, h);
+              shape.lineTo(b/2, 0);
+              shape.lineTo(-b/2, 0);
+              
+              const extrudeSettings = { depth: 0.5, bevelEnabled: false };
+              const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+              const material = new THREE.MeshStandardMaterial({ color: 0x3b82f6 });
+              const gnomon = new THREE.Mesh(geometry, material);
+              gnomon.rotation.x = -Math.PI / 2;
+              scene.add(gnomon);
+              
+              const dialGeometry = new THREE.TorusGeometry(yantra.dimensions.dialRadius, 0.2, 16, 32, Math.PI);
+              const dialMaterial = new THREE.MeshStandardMaterial({ color: 0x60a5fa });
+              const dial = new THREE.Mesh(dialGeometry, dialMaterial);
+              dial.rotation.x = Math.PI / 2;
+              dial.position.set(-b/2, 0, 0);
+              scene.add(dial);
+              
+            } else if (yantra.type === 'altitude_azimuth') {
+              const r = yantra.dimensions.cylinderRadius;
+              const h = yantra.dimensions.cylinderHeight;
+              
+              const geometry = new THREE.CylinderGeometry(r, r, h, 32, 1, true);
+              const material = new THREE.MeshStandardMaterial({ 
+                color: 0x3b82f6, 
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.7
+              });
+              const cylinder = new THREE.Mesh(geometry, material);
+              cylinder.position.y = h / 2;
+              scene.add(cylinder);
+              
+              const pillarGeometry = new THREE.CylinderGeometry(0.3, 0.3, yantra.dimensions.pillarHeight);
+              const pillarMaterial = new THREE.MeshStandardMaterial({ color: 0xfbbf24 });
+              const pillar = new THREE.Mesh(pillarGeometry, pillarMaterial);
+              pillar.position.y = yantra.dimensions.pillarHeight / 2;
+              scene.add(pillar);
+              
+            } else if (yantra.type === 'angular_measurement') {
+              const outer = yantra.dimensions.outerRadius;
+              
+              const geometry = new THREE.TorusGeometry(outer, 0.3, 16, 64);
+              const material = new THREE.MeshStandardMaterial({ color: 0x3b82f6 });
+              const ring = new THREE.Mesh(geometry, material);
+              ring.rotation.x = Math.PI / 2;
+              scene.add(ring);
+              
+              const barGeometry = new THREE.BoxGeometry(outer * 2, 0.2, 0.2);
+              const barMaterial = new THREE.MeshStandardMaterial({ color: 0xfbbf24 });
+              const bar = new THREE.Mesh(barGeometry, barMaterial);
+              scene.add(bar);
+              
+            } else if (yantra.type === 'celestial_coordinates') {
+              const r = yantra.dimensions.hemisphereRadius;
+              
+              const geometry = new THREE.SphereGeometry(r, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+              const material = new THREE.MeshStandardMaterial({ 
+                color: 0x3b82f6,
+                side: THREE.DoubleSide
+              });
+              const hemisphere = new THREE.Mesh(geometry, material);
+              scene.add(hemisphere);
+              
+              const rimGeometry = new THREE.TorusGeometry(r, 0.2, 16, 64);
+              const rimMaterial = new THREE.MeshStandardMaterial({ color: 0xfbbf24 });
+              const rim = new THREE.Mesh(rimGeometry, rimMaterial);
+              rim.rotation.x = Math.PI / 2;
+              scene.add(rim);
+              
+            } else if (yantra.type === 'azimuth') {
+              const r = yantra.dimensions.circleRadius;
+              const h = yantra.dimensions.pillarHeight;
+              
+              const baseGeometry = new THREE.TorusGeometry(r, 0.2, 16, 64);
+              const baseMaterial = new THREE.MeshStandardMaterial({ color: 0x3b82f6 });
+              const base = new THREE.Mesh(baseGeometry, baseMaterial);
+              base.rotation.x = Math.PI / 2;
+              scene.add(base);
+              
+              const pillarGeometry = new THREE.CylinderGeometry(0.3, 0.3, h);
+              const pillarMaterial = new THREE.MeshStandardMaterial({ color: 0x60a5fa });
+              const pillar = new THREE.Mesh(pillarGeometry, pillarMaterial);
+              pillar.position.y = h / 2;
+              scene.add(pillar);
+              
+              const barGeometry = new THREE.BoxGeometry(r * 2, 0.2, 0.2);
+              const barMaterial = new THREE.MeshStandardMaterial({ color: 0xfbbf24 });
+              const bar = new THREE.Mesh(barGeometry, barMaterial);
+              bar.position.y = h;
+              scene.add(bar);
+            }
+
+            // Mouse controls
+            const canvas = renderer.domElement;
+            
+            const onMouseDown = (e) => {
+              mouseRef.current.isDown = true;
+              mouseRef.current.x = e.clientX;
+              mouseRef.current.y = e.clientY;
+            };
+            
+            const onMouseMove = (e) => {
+              if (!mouseRef.current.isDown) return;
+              
+              const deltaX = e.clientX - mouseRef.current.x;
+              const deltaY = e.clientY - mouseRef.current.y;
+              
+              scene.rotation.y += deltaX * 0.01;
+              scene.rotation.x += deltaY * 0.01;
+              
+              mouseRef.current.x = e.clientX;
+              mouseRef.current.y = e.clientY;
+            };
+            
+            const onMouseUp = () => {
+              mouseRef.current.isDown = false;
+            };
+            
+            const onWheel = (e) => {
+              e.preventDefault();
+              const delta = e.deltaY * 0.001;
+              camera.position.multiplyScalar(1 + delta);
+            };
+            
+            canvas.addEventListener('mousedown', onMouseDown);
+            canvas.addEventListener('mousemove', onMouseMove);
+            canvas.addEventListener('mouseup', onMouseUp);
+            canvas.addEventListener('wheel', onWheel);
+
+            let animationId;
+            const animate = () => {
+              animationId = requestAnimationFrame(animate);
+              renderer.render(scene, camera);
+            };
+            animate();
+
+            return () => {
+              cancelAnimationFrame(animationId);
+              canvas.removeEventListener('mousedown', onMouseDown);
+              canvas.removeEventListener('mousemove', onMouseMove);
+              canvas.removeEventListener('mouseup', onMouseUp);
+              canvas.removeEventListener('wheel', onWheel);
+              if (mountRef.current && renderer.domElement) {
+                mountRef.current.removeChild(renderer.domElement);
+              }
+              renderer.dispose();
+            };
+          }, [yantra]);
+
+          return <div ref={mountRef} className="border border-blue-500 rounded" />;
+        };
+
+        // Main App Component
+        function YantraApp() {
+          const [latitude, setLatitude] = useState(26.9124);
+          const [longitude, setLongitude] = useState(75.7873);
+          const [baseSize, setBaseSize] = useState(10);
+          const [yantras, setYantras] = useState([]);
+          const [selectedYantra, setSelectedYantra] = useState(null);
+
+          const locations = [
+            { name: "Jaipur (Jantar Mantar)", lat: 26.9124, lon: 75.7873 },
+            { name: "Delhi (Jantar Mantar)", lat: 28.6271, lon: 77.2166 },
+            { name: "Ujjain (Dongla)", lat: 23.1765, lon: 75.7885 },
+            { name: "Varanasi", lat: 25.3176, lon: 82.9739 },
+            { name: "Mathura", lat: 27.4924, lon: 77.6737 }
+          ];
+
+          const calculateYantras = () => {
+            const calculator = new YantraCalculator(latitude, longitude, baseSize);
+            const calculated = calculator.calculateAllYantras();
+            setYantras(calculated);
+            setSelectedYantra(calculated[0]);
+          };
+
+          return (
+            <div className="min-h-screen bg-slate-950 text-gray-100 p-6">
+              <div className="max-w-7xl mx-auto">
+                <div className="mb-8">
+                  <h1 className="text-3xl font-bold text-blue-400 mb-2 flex items-center gap-2">
+                    <Calculator size={32} />
+                    Indian Astronomical Instruments Calculator
+                  </h1>
+                  <p className="text-gray-400">Generate dimensions and visualizations for Yantras based on location</p>
+                </div>
+
+                <div className="bg-slate-900 border border-slate-700 rounded-lg p-6 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm text-gray-400 mb-1">Latitude (°)</label>
+                      <input
+                        type="number"
+                        step="0.0001"
+                        value={latitude}
+                        onChange={(e) => setLatitude(parseFloat(e.target.value))}
+                        className="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-400 mb-1">Longitude (°)</label>
+                      <input
+                        type="number"
+                        step="0.0001"
+                        value={longitude}
+                        onChange={(e) => setLongitude(parseFloat(e.target.value))}
+                        className="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-400 mb-1">Base Size (m)</label>
+                      <input
+                        type="number"
+                        step="1"
+                        value={baseSize}
+                        onChange={(e) => setBaseSize(parseFloat(e.target.value))}
+                        className="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="block text-sm text-gray-400 mb-2">Quick Select Location:</label>
+                    <div className="flex flex-wrap gap-2">
+                      {locations.map((loc) => (
+                        <button
+                          key={loc.name}
+                          onClick={() => {
+                            setLatitude(loc.lat);
+                            setLongitude(loc.lon);
+                          }}
+                          className="bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded px-3 py-1 text-sm flex items-center gap-1"
+                        >
+                          <MapPin size={14} />
+                          {loc.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={calculateYantras}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-medium"
+                  >
+                    Calculate Dimensions
+                  </button>
+                </div>
+
+                {yantras.length > 0 && (
+                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div className="lg:col-span-1 bg-slate-900 border border-slate-700 rounded-lg p-4">
+                      <h3 className="text-lg font-semibold text-blue-400 mb-3">Instruments</h3>
+                      <div className="space-y-2">
+                        {yantras.map((yantra, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setSelectedYantra(yantra)}
+                            className={`w-full text-left px-3 py-2 rounded transition ${
+                              selectedYantra?.name === yantra.name
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-slate-800 hover:bg-slate-700 text-gray-300'
+                            }`}
+                          >
+                            {yantra.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {selectedYantra && (
+                      <div className="lg:col-span-3 space-y-6">
+                        <div className="bg-slate-900 border border-slate-700 rounded-lg p-6">
+                          <h2 className="text-2xl font-bold text-blue-400 mb-2">{selectedYantra.name}</h2>
+                          <p className="text-gray-400 mb-4">{selectedYantra.description}</p>
+                          
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {Object.entries(selectedYantra.dimensions).map(([key, value]) => (
+                              <div key={key} className="bg-slate-800 rounded p-3">
+                                <div className="text-xs text-gray-500 uppercase">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
+                                <div className="text-lg font-mono text-blue-400">
+                                  {typeof value === 'number' ? value.toFixed(2) : value}
+                                  {typeof value === 'number' && !key.includes('ngle') && !key.includes('ivision') && !key.includes('umber') ? 'm' : ''}
+                                  {key.includes('ngle') ? '°' : ''}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="bg-slate-900 border border-slate-700 rounded-lg p-4">
+                            <h3 className="text-lg font-semibold text-blue-400 mb-3 flex items-center gap-2">
+                              <Ruler size={20} />
+                              2D Diagram
+                            </h3>
+                            <DiagramGenerator yantra={selectedYantra} />
+                          </div>
+
+                          <div className="bg-slate-900 border border-slate-700 rounded-lg p-4">
+                            <h3 className="text-lg font-semibold text-blue-400 mb-3 flex items-center gap-2">
+                              <Box size={20} />
+                              3D Model (Drag to rotate, scroll to zoom)
+                            </h3>
+                            <Model3D yantra={selectedYantra} />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        }
+
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<YantraApp />);
+    </script>
+</body>
+</html>

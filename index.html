@@ -19,9 +19,6 @@
     <!-- Babel Standalone for JSX transformation -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- Lucide Icons CDN -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
     <style>
         body {
             margin: 0;
@@ -29,26 +26,91 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
         
-        #root {
+        #root.dark {
             min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
         }
         
-        /* Custom scrollbar for dark theme */
+        #root.light {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fcd34d 100%);
+        }
+        
+        /* Custom scrollbar */
         ::-webkit-scrollbar {
-            width: 10px;
+            width: 12px;
         }
         
-        ::-webkit-scrollbar-track {
-            background: #1e293b;
+        .dark ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
         }
         
-        ::-webkit-scrollbar-thumb {
-            background: #475569;
-            border-radius: 5px;
+        .light ::-webkit-scrollbar-track {
+            background: rgba(254, 243, 199, 0.5);
         }
         
-        ::-webkit-scrollbar-thumb:hover {
-            background: #64748b;
+        .dark ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #8b5cf6 0%, #6366f1 100%);
+            border-radius: 6px;
+        }
+        
+        .light ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+            border-radius: 6px;
+        }
+        
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #a78bfa 0%, #818cf8 100%);
+        }
+        
+        .light ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .dark .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        
+        .light .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        
+        .dark .gradient-text {
+            background: linear-gradient(135deg, #a78bfa 0%, #ec4899 50%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .light .gradient-text {
+            background: linear-gradient(135deg, #f59e0b 0%, #dc2626 50%, #ea580c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
     </style>
 </head>
@@ -61,8 +123,8 @@
         const { useState, useRef, useEffect } = React;
 
         // Lucide Icon Components
-        const Calculator = ({ size = 24 }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        const Calculator = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
                 <rect x="4" y="2" width="16" height="20" rx="2"/>
                 <line x1="8" y1="6" x2="16" y2="6"/>
                 <line x1="16" y1="10" x2="16" y2="10"/>
@@ -82,8 +144,8 @@
             </svg>
         );
 
-        const Ruler = ({ size = 24 }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        const Ruler = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
                 <path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.4 2.4 0 0 1 0-3.4l2.6-2.6a2.4 2.4 0 0 1 3.4 0z"/>
                 <path d="m14.5 12.5 2-2"/>
                 <path d="m11.5 9.5 2-2"/>
@@ -92,11 +154,31 @@
             </svg>
         );
 
-        const Box = ({ size = 24 }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        const Box = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
                 <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                 <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
                 <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+        );
+
+        const Sun = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <circle cx="12" cy="12" r="4"/>
+                <path d="M12 2v2"/>
+                <path d="M12 20v2"/>
+                <path d="m4.93 4.93 1.41 1.41"/>
+                <path d="m17.66 17.66 1.41 1.41"/>
+                <path d="M2 12h2"/>
+                <path d="M20 12h2"/>
+                <path d="m6.34 17.66-1.41 1.41"/>
+                <path d="m19.07 4.93-1.41 1.41"/>
+            </svg>
+        );
+
+        const Moon = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
             </svg>
         );
 
@@ -126,7 +208,14 @@
                 gnomonAngle: this.latitude,
                 quadrantArcLength: dialRadius * Math.PI / 2
               },
-              description: "Giant equinoctial sundial with gnomon aligned to Earth's axis"
+              description: "Giant equinoctial sundial with gnomon aligned to Earth's axis",
+              detailedInfo: {
+                purpose: "The Samrat Yantra (Supreme Instrument) is the largest and most accurate sundial, designed to measure local time with precision up to 2 seconds.",
+                construction: "Features a massive triangular gnomon (pointer) whose hypotenuse is parallel to Earth's axis. The gnomon casts shadows on quadrant scales marked with hours, minutes, and seconds.",
+                usage: "As the sun moves across the sky, the gnomon's shadow moves along the curved quadrants. Time is read where the shadow's edge intersects the scale markings.",
+                accuracy: "Can measure time to within 2 seconds accuracy. The large size minimizes errors from shadow edge diffusion.",
+                historicalContext: "Built by Maharaja Jai Singh II in the 18th century. The Jaipur Samrat Yantra stands 27 meters tall and is a UNESCO World Heritage site."
+              }
             };
           }
 
@@ -145,7 +234,14 @@
                 sectorAngle: 90,
                 numberOfSectors: 4
               },
-              description: "Used to measure altitude and azimuth of celestial objects"
+              description: "Used to measure altitude and azimuth of celestial objects",
+              detailedInfo: {
+                purpose: "The Rama Yantra measures the altitude (elevation angle) and azimuth (horizontal angle) of celestial bodies like stars and planets.",
+                construction: "Consists of two identical cylindrical structures with open tops, divided into sectors. A vertical pillar at the center casts shadows on graduated scales.",
+                usage: "Observers use the shadow cast by the central pillar to determine the altitude and azimuth coordinates of celestial objects. The complementary pair allows measurements across the full sky.",
+                accuracy: "Provides accurate measurements of celestial coordinates, essential for astronomical observations and astrological calculations.",
+                historicalContext: "Named after Lord Rama, this instrument demonstrates advanced understanding of spherical astronomy in 18th century India."
+              }
             };
           }
 
@@ -165,7 +261,14 @@
                 crossBarLength: outerRadius * 2,
                 poleHeight: outerRadius * 1.5
               },
-              description: "Metal ring instrument for measuring angular positions"
+              description: "Metal ring instrument for measuring angular positions",
+              detailedInfo: {
+                purpose: "The Chakra Yantra (Wheel Instrument) is used to measure the declination and hour angle of celestial objects, helping determine their position in the sky.",
+                construction: "Features a large metal ring graduated in degrees, mounted on a pole. A crossbar with sighting holes allows precise angular measurements.",
+                usage: "Astronomers align the sighting mechanism with a celestial object and read its angular position from the graduated ring. Can measure both horizontal and vertical angles.",
+                accuracy: "The 360-degree graduation allows precise angular measurements essential for tracking planetary motions and stellar positions.",
+                historicalContext: "Represents the ancient Indian tradition of precision instrument making, combining metalworking skills with astronomical knowledge."
+              }
             };
           }
 
@@ -184,7 +287,14 @@
                 numberOfMarbleSlabs: 2,
                 depthOfHemisphere: hemisphereRadius
               },
-              description: "Hemispherical sundial showing celestial coordinates"
+              description: "Hemispherical sundial showing celestial coordinates",
+              detailedInfo: {
+                purpose: "The Jai Prakash Yantra (Light of Jai Singh) is an inverted celestial sphere used to determine the position of the sun and other celestial bodies at any time.",
+                construction: "Consists of two complementary hemispherical bowls sunk into the ground, with marble slabs forming the inverse of a celestial sphere. Crosswires stretched across the bowls serve as reference points.",
+                usage: "The sun's position is determined by observing where its image falls on the graduated marble surface. The complementary bowls ensure continuous observation throughout the day.",
+                accuracy: "Provides highly accurate measurements of celestial coordinates including right ascension, declination, and zenith distance.",
+                historicalContext: "Named after its creator Maharaja Jai Singh II, this instrument represents the pinnacle of observational astronomy in 18th century India. Its innovative inverted design solved many practical observation challenges."
+              }
             };
           }
 
@@ -203,7 +313,14 @@
                 compassDivisions: 360,
                 sightingBarLength: circleRadius * 2
               },
-              description: "Used to measure azimuth angles of celestial bodies"
+              description: "Used to measure azimuth angles of celestial bodies",
+              detailedInfo: {
+                purpose: "The Digamsa Yantra (Azimuth Instrument) is specifically designed to measure the azimuth angle - the horizontal direction of celestial objects relative to north.",
+                construction: "Features a circular base graduated in 360 degrees like a compass, with a tall central pillar and a rotating sighting bar for precise directional measurements.",
+                usage: "Observers rotate the sighting bar to align with a celestial object and read its azimuth angle from the graduated circular base. Essential for determining cardinal directions and object positions.",
+                accuracy: "The 360-degree graduation provides precise azimuth measurements crucial for navigation, timekeeping, and astronomical calculations.",
+                historicalContext: "This instrument reflects the importance of directional measurements in Indian astronomy, particularly for determining prayer times and auspicious directions in Vedic traditions."
+              }
             };
           }
 
@@ -219,7 +336,7 @@
         }
 
         // 2D Diagram Generator Component
-        const DiagramGenerator = ({ yantra }) => {
+        const DiagramGenerator = ({ yantra, theme }) => {
           const canvasRef = useRef(null);
 
           useEffect(() => {
@@ -232,12 +349,28 @@
             const scale = 20;
             
             ctx.clearRect(0, 0, width, height);
-            ctx.fillStyle = '#1e293b';
+            
+            // Gradient background
+            const gradient = ctx.createLinearGradient(0, 0, width, height);
+            if (theme === 'dark') {
+              gradient.addColorStop(0, '#0f172a');
+              gradient.addColorStop(1, '#1e1b4b');
+              ctx.strokeStyle = '#a78bfa';
+              ctx.fillStyle = '#8b5cf6';
+              ctx.shadowColor = '#8b5cf6';
+            } else {
+              gradient.addColorStop(0, '#fef3c7');
+              gradient.addColorStop(1, '#fde68a');
+              ctx.strokeStyle = '#f59e0b';
+              ctx.fillStyle = '#ea580c';
+              ctx.shadowColor = '#f59e0b';
+            }
+            ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, width, height);
             
-            ctx.strokeStyle = '#60a5fa';
-            ctx.fillStyle = '#3b82f6';
-            ctx.lineWidth = 2;
+            ctx.fillStyle = theme === 'dark' ? '#8b5cf6' : '#ea580c';
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 10;
             ctx.font = '12px monospace';
             
             const centerX = width / 2;
@@ -259,7 +392,9 @@
               ctx.arc(centerX - b/2, centerY + 50, yantra.dimensions.dialRadius * scale, 0, Math.PI, true);
               ctx.stroke();
               
-              ctx.fillStyle = '#60a5fa';
+              ctx.shadowBlur = 0;
+              ctx.fillStyle = '#fbbf24';
+              ctx.font = 'bold 13px monospace';
               ctx.fillText(`H: ${yantra.dimensions.gnomonHeight.toFixed(2)}m`, centerX - b/2 - 60, centerY + 20);
               ctx.fillText(`B: ${yantra.dimensions.gnomonBase.toFixed(2)}m`, centerX - 30, centerY + 70);
               ctx.fillText(`Angle: ${yantra.dimensions.gnomonAngle.toFixed(1)}°`, centerX + b/2 + 10, centerY + 30);
@@ -279,7 +414,9 @@
                 ctx.stroke();
               }
               
-              ctx.fillStyle = '#60a5fa';
+              ctx.shadowBlur = 0;
+              ctx.fillStyle = '#fbbf24';
+              ctx.font = 'bold 13px monospace';
               ctx.fillText(`R: ${yantra.dimensions.cylinderRadius.toFixed(2)}m`, centerX + r + 10, centerY);
               ctx.fillText(`4 Sectors`, centerX - 30, centerY - r - 10);
               
@@ -300,7 +437,9 @@
               ctx.lineTo(centerX + outer, centerY);
               ctx.stroke();
               
-              ctx.fillStyle = '#60a5fa';
+              ctx.shadowBlur = 0;
+              ctx.fillStyle = '#fbbf24';
+              ctx.font = 'bold 13px monospace';
               ctx.fillText(`R: ${yantra.dimensions.outerRadius.toFixed(2)}m`, centerX + outer + 10, centerY);
               
             } else if (yantra.type === 'celestial_coordinates') {
@@ -310,15 +449,21 @@
               ctx.arc(centerX, centerY + 50, r, Math.PI, 0, true);
               ctx.stroke();
               
-              ctx.strokeStyle = '#fbbf24';
-              ctx.lineWidth = 3;
+              ctx.strokeStyle = '#f59e0b';
+              ctx.lineWidth = 4;
+              ctx.shadowBlur = 15;
+              ctx.shadowColor = '#f59e0b';
               ctx.beginPath();
               ctx.arc(centerX, centerY + 50, r, Math.PI, 0, true);
               ctx.stroke();
-              ctx.lineWidth = 2;
-              ctx.strokeStyle = '#60a5fa';
+              ctx.lineWidth = 3;
+              ctx.strokeStyle = '#a78bfa';
+              ctx.shadowBlur = 10;
+              ctx.shadowColor = '#8b5cf6';
               
-              ctx.fillStyle = '#60a5fa';
+              ctx.shadowBlur = 0;
+              ctx.fillStyle = '#fbbf24';
+              ctx.font = 'bold 13px monospace';
               ctx.fillText(`Hemisphere R: ${yantra.dimensions.hemisphereRadius.toFixed(2)}m`, centerX - 80, centerY + 80);
               
             } else if (yantra.type === 'azimuth') {
@@ -336,26 +481,32 @@
               ctx.moveTo(centerX - r, centerY + 50 - h);
               ctx.lineTo(centerX + r, centerY + 50 - h);
               ctx.stroke();
-              ctx.strokeStyle = '#60a5fa';
+              ctx.strokeStyle = '#a78bfa';
               
-              ctx.fillStyle = '#60a5fa';
+              ctx.shadowBlur = 0;
+              ctx.fillStyle = '#fbbf24';
+              ctx.font = 'bold 13px monospace';
               ctx.fillText(`H: ${yantra.dimensions.pillarHeight.toFixed(2)}m`, centerX + 20, centerY + 20);
             }
             
-          }, [yantra]);
+          }, [yantra, theme]);
 
           return (
             <canvas 
               ref={canvasRef} 
               width={400} 
               height={300}
-              className="border border-blue-500 rounded bg-slate-900"
+              className={`border-2 rounded-lg shadow-lg ${
+                theme === 'dark' 
+                  ? 'border-purple-500 shadow-purple-500/50' 
+                  : 'border-orange-500 shadow-orange-500/50'
+              }`}
             />
           );
         };
 
         // 3D Model Renderer Component
-        const Model3D = ({ yantra }) => {
+        const Model3D = ({ yantra, theme }) => {
           const mountRef = useRef(null);
           const sceneRef = useRef(null);
           const rendererRef = useRef(null);
@@ -366,7 +517,13 @@
             if (!mountRef.current || !yantra) return;
 
             const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0f172a);
+            if (theme === 'dark') {
+              scene.background = new THREE.Color(0x0a0a1a);
+              scene.fog = new THREE.Fog(0x0a0a1a, 30, 100);
+            } else {
+              scene.background = new THREE.Color(0xfef3c7);
+              scene.fog = new THREE.Fog(0xfef3c7, 30, 100);
+            }
             sceneRef.current = scene;
 
             const camera = new THREE.PerspectiveCamera(50, 400 / 300, 0.1, 1000);
@@ -379,14 +536,49 @@
             mountRef.current.appendChild(renderer.domElement);
             rendererRef.current = renderer;
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-            scene.add(ambientLight);
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(10, 10, 10);
-            scene.add(directionalLight);
+            if (theme === 'dark') {
+              const ambientLight = new THREE.AmbientLight(0x8b5cf6, 0.4);
+              scene.add(ambientLight);
+              
+              const directionalLight1 = new THREE.DirectionalLight(0xa78bfa, 1.2);
+              directionalLight1.position.set(10, 15, 10);
+              directionalLight1.castShadow = true;
+              scene.add(directionalLight1);
+              
+              const directionalLight2 = new THREE.DirectionalLight(0x6366f1, 0.8);
+              directionalLight2.position.set(-10, 10, -10);
+              scene.add(directionalLight2);
+              
+              const pointLight = new THREE.PointLight(0xfbbf24, 1, 50);
+              pointLight.position.set(0, 10, 0);
+              scene.add(pointLight);
 
-            const gridHelper = new THREE.GridHelper(30, 30, 0x444444, 0x222222);
-            scene.add(gridHelper);
+              const gridHelper = new THREE.GridHelper(30, 30, 0x8b5cf6, 0x312e81);
+              scene.add(gridHelper);
+            } else {
+              const ambientLight = new THREE.AmbientLight(0xf59e0b, 0.5);
+              scene.add(ambientLight);
+              
+              const directionalLight1 = new THREE.DirectionalLight(0xfbbf24, 1.5);
+              directionalLight1.position.set(10, 15, 10);
+              directionalLight1.castShadow = true;
+              scene.add(directionalLight1);
+              
+              const directionalLight2 = new THREE.DirectionalLight(0xea580c, 1.0);
+              directionalLight2.position.set(-10, 10, -10);
+              scene.add(directionalLight2);
+              
+              const pointLight = new THREE.PointLight(0xdc2626, 1, 50);
+              pointLight.position.set(0, 10, 0);
+              scene.add(pointLight);
+
+              const gridHelper = new THREE.GridHelper(30, 30, 0xf59e0b, 0xfde68a);
+              scene.add(gridHelper);
+            }
+            
+            // Add axes helper for better orientation
+            const axesHelper = new THREE.AxesHelper(15);
+            scene.add(axesHelper);
 
             // Build 3D model
             if (yantra.type === 'sundial') {
@@ -399,15 +591,27 @@
               shape.lineTo(b/2, 0);
               shape.lineTo(-b/2, 0);
               
-              const extrudeSettings = { depth: 0.5, bevelEnabled: false };
+              const extrudeSettings = { depth: 0.5, bevelEnabled: true, bevelThickness: 0.1, bevelSize: 0.1 };
               const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-              const material = new THREE.MeshStandardMaterial({ color: 0x3b82f6 });
+              const material = new THREE.MeshStandardMaterial({ 
+                color: 0x8b5cf6,
+                metalness: 0.6,
+                roughness: 0.3,
+                emissive: 0x6366f1,
+                emissiveIntensity: 0.2
+              });
               const gnomon = new THREE.Mesh(geometry, material);
               gnomon.rotation.x = -Math.PI / 2;
               scene.add(gnomon);
               
               const dialGeometry = new THREE.TorusGeometry(yantra.dimensions.dialRadius, 0.2, 16, 32, Math.PI);
-              const dialMaterial = new THREE.MeshStandardMaterial({ color: 0x60a5fa });
+              const dialMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xfbbf24,
+                metalness: 0.8,
+                roughness: 0.2,
+                emissive: 0xf59e0b,
+                emissiveIntensity: 0.3
+              });
               const dial = new THREE.Mesh(dialGeometry, dialMaterial);
               dial.rotation.x = Math.PI / 2;
               dial.position.set(-b/2, 0, 0);
@@ -419,17 +623,27 @@
               
               const geometry = new THREE.CylinderGeometry(r, r, h, 32, 1, true);
               const material = new THREE.MeshStandardMaterial({ 
-                color: 0x3b82f6, 
+                color: 0x8b5cf6, 
                 side: THREE.DoubleSide,
                 transparent: true,
-                opacity: 0.7
+                opacity: 0.6,
+                metalness: 0.5,
+                roughness: 0.3,
+                emissive: 0x6366f1,
+                emissiveIntensity: 0.2
               });
               const cylinder = new THREE.Mesh(geometry, material);
               cylinder.position.y = h / 2;
               scene.add(cylinder);
               
               const pillarGeometry = new THREE.CylinderGeometry(0.3, 0.3, yantra.dimensions.pillarHeight);
-              const pillarMaterial = new THREE.MeshStandardMaterial({ color: 0xfbbf24 });
+              const pillarMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xfbbf24,
+                metalness: 0.7,
+                roughness: 0.2,
+                emissive: 0xf59e0b,
+                emissiveIntensity: 0.3
+              });
               const pillar = new THREE.Mesh(pillarGeometry, pillarMaterial);
               pillar.position.y = yantra.dimensions.pillarHeight / 2;
               scene.add(pillar);
@@ -438,13 +652,25 @@
               const outer = yantra.dimensions.outerRadius;
               
               const geometry = new THREE.TorusGeometry(outer, 0.3, 16, 64);
-              const material = new THREE.MeshStandardMaterial({ color: 0x3b82f6 });
+              const material = new THREE.MeshStandardMaterial({ 
+                color: 0x8b5cf6,
+                metalness: 0.7,
+                roughness: 0.2,
+                emissive: 0x6366f1,
+                emissiveIntensity: 0.3
+              });
               const ring = new THREE.Mesh(geometry, material);
               ring.rotation.x = Math.PI / 2;
               scene.add(ring);
               
               const barGeometry = new THREE.BoxGeometry(outer * 2, 0.2, 0.2);
-              const barMaterial = new THREE.MeshStandardMaterial({ color: 0xfbbf24 });
+              const barMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xfbbf24,
+                metalness: 0.8,
+                roughness: 0.2,
+                emissive: 0xf59e0b,
+                emissiveIntensity: 0.4
+              });
               const bar = new THREE.Mesh(barGeometry, barMaterial);
               scene.add(bar);
               
@@ -453,14 +679,24 @@
               
               const geometry = new THREE.SphereGeometry(r, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
               const material = new THREE.MeshStandardMaterial({ 
-                color: 0x3b82f6,
-                side: THREE.DoubleSide
+                color: 0x8b5cf6,
+                side: THREE.DoubleSide,
+                metalness: 0.5,
+                roughness: 0.3,
+                emissive: 0x6366f1,
+                emissiveIntensity: 0.2
               });
               const hemisphere = new THREE.Mesh(geometry, material);
               scene.add(hemisphere);
               
               const rimGeometry = new THREE.TorusGeometry(r, 0.2, 16, 64);
-              const rimMaterial = new THREE.MeshStandardMaterial({ color: 0xfbbf24 });
+              const rimMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xfbbf24,
+                metalness: 0.8,
+                roughness: 0.2,
+                emissive: 0xf59e0b,
+                emissiveIntensity: 0.4
+              });
               const rim = new THREE.Mesh(rimGeometry, rimMaterial);
               rim.rotation.x = Math.PI / 2;
               scene.add(rim);
@@ -470,19 +706,37 @@
               const h = yantra.dimensions.pillarHeight;
               
               const baseGeometry = new THREE.TorusGeometry(r, 0.2, 16, 64);
-              const baseMaterial = new THREE.MeshStandardMaterial({ color: 0x3b82f6 });
+              const baseMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x8b5cf6,
+                metalness: 0.7,
+                roughness: 0.2,
+                emissive: 0x6366f1,
+                emissiveIntensity: 0.3
+              });
               const base = new THREE.Mesh(baseGeometry, baseMaterial);
               base.rotation.x = Math.PI / 2;
               scene.add(base);
               
               const pillarGeometry = new THREE.CylinderGeometry(0.3, 0.3, h);
-              const pillarMaterial = new THREE.MeshStandardMaterial({ color: 0x60a5fa });
+              const pillarMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xa78bfa,
+                metalness: 0.6,
+                roughness: 0.3,
+                emissive: 0x8b5cf6,
+                emissiveIntensity: 0.3
+              });
               const pillar = new THREE.Mesh(pillarGeometry, pillarMaterial);
               pillar.position.y = h / 2;
               scene.add(pillar);
               
               const barGeometry = new THREE.BoxGeometry(r * 2, 0.2, 0.2);
-              const barMaterial = new THREE.MeshStandardMaterial({ color: 0xfbbf24 });
+              const barMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xfbbf24,
+                metalness: 0.8,
+                roughness: 0.2,
+                emissive: 0xf59e0b,
+                emissiveIntensity: 0.4
+              });
               const bar = new THREE.Mesh(barGeometry, barMaterial);
               bar.position.y = h;
               scene.add(bar);
@@ -543,9 +797,13 @@
               }
               renderer.dispose();
             };
-          }, [yantra]);
+          }, [yantra, theme]);
 
-          return <div ref={mountRef} className="border border-blue-500 rounded" />;
+          return <div ref={mountRef} className={`border-2 rounded-lg shadow-lg ${
+            theme === 'dark' 
+              ? 'border-purple-500 shadow-purple-500/50' 
+              : 'border-orange-500 shadow-orange-500/50'
+          }`} />;
         };
 
         // Main App Component
@@ -555,6 +813,15 @@
           const [baseSize, setBaseSize] = useState(10);
           const [yantras, setYantras] = useState([]);
           const [selectedYantra, setSelectedYantra] = useState(null);
+          const [theme, setTheme] = useState('dark');
+
+          useEffect(() => {
+            document.getElementById('root').className = theme;
+          }, [theme]);
+
+          const toggleTheme = () => {
+            setTheme(theme === 'dark' ? 'light' : 'dark');
+          };
 
           const locations = [
             { name: "Jaipur (Jantar Mantar)", lat: 26.9124, lon: 75.7873 },
@@ -572,53 +839,78 @@
           };
 
           return (
-            <div className="min-h-screen bg-slate-950 text-gray-100 p-6">
+            <div className={`min-h-screen p-6 ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>
               <div className="max-w-7xl mx-auto">
-                <div className="mb-8">
-                  <h1 className="text-3xl font-bold text-blue-400 mb-2 flex items-center gap-2">
-                    <Calculator size={32} />
-                    Indian Astronomical Instruments Calculator
-                  </h1>
-                  <p className="text-gray-400">Generate dimensions and visualizations for Yantras based on location</p>
+                <div className="mb-8 animate-fade-in flex justify-between items-start">
+                  <div>
+                    <h1 className="text-5xl font-bold gradient-text mb-3 flex items-center gap-3">
+                      <Calculator size={48} className={theme === 'dark' ? 'text-purple-400' : 'text-orange-600'} />
+                      Indian Astronomical Instruments Calculator
+                    </h1>
+                    <p className={`text-xl ml-16 ${theme === 'dark' ? 'text-purple-200' : 'text-orange-800'}`}>Generate dimensions and visualizations for Yantras based on location</p>
+                  </div>
+                  <button
+                    onClick={toggleTheme}
+                    className={`p-3 rounded-lg transition-all transform hover:scale-110 ${
+                      theme === 'dark' 
+                        ? 'bg-purple-600 hover:bg-purple-500 text-yellow-300' 
+                        : 'bg-orange-500 hover:bg-orange-400 text-white'
+                    } shadow-lg`}
+                    title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                  >
+                    {theme === 'dark' ? <Sun size={28} /> : <Moon size={28} />}
+                  </button>
                 </div>
 
-                <div className="bg-slate-900 border border-slate-700 rounded-lg p-6 mb-6">
+                <div className="glass-card rounded-xl p-6 mb-6 shadow-2xl shadow-purple-500/20 animate-fade-in">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div>
-                      <label className="block text-sm text-gray-400 mb-1">Latitude (°)</label>
+                      <label className={`block text-sm font-semibold mb-2 ${theme === 'dark' ? 'text-purple-300' : 'text-orange-700'}`}>Latitude (°)</label>
                       <input
                         type="number"
                         step="0.0001"
                         value={latitude}
                         onChange={(e) => setLatitude(parseFloat(e.target.value))}
-                        className="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white"
+                        className={`w-full rounded-lg px-4 py-3 border-2 focus:outline-none focus:ring-2 transition ${
+                          theme === 'dark'
+                            ? 'bg-slate-800/50 border-purple-500/50 text-white focus:border-purple-400 focus:ring-purple-500/50'
+                            : 'bg-white border-orange-400/50 text-gray-900 focus:border-orange-500 focus:ring-orange-400/50'
+                        }`}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-400 mb-1">Longitude (°)</label>
+                      <label className={`block text-sm font-semibold mb-2 ${theme === 'dark' ? 'text-purple-300' : 'text-orange-700'}`}>Longitude (°)</label>
                       <input
                         type="number"
                         step="0.0001"
                         value={longitude}
                         onChange={(e) => setLongitude(parseFloat(e.target.value))}
-                        className="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white"
+                        className={`w-full rounded-lg px-4 py-3 border-2 focus:outline-none focus:ring-2 transition ${
+                          theme === 'dark'
+                            ? 'bg-slate-800/50 border-purple-500/50 text-white focus:border-purple-400 focus:ring-purple-500/50'
+                            : 'bg-white border-orange-400/50 text-gray-900 focus:border-orange-500 focus:ring-orange-400/50'
+                        }`}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-400 mb-1">Base Size (m)</label>
+                      <label className={`block text-sm font-semibold mb-2 ${theme === 'dark' ? 'text-purple-300' : 'text-orange-700'}`}>Base Size (m)</label>
                       <input
                         type="number"
                         step="1"
                         value={baseSize}
                         onChange={(e) => setBaseSize(parseFloat(e.target.value))}
-                        className="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white"
+                        className={`w-full rounded-lg px-4 py-3 border-2 focus:outline-none focus:ring-2 transition ${
+                          theme === 'dark'
+                            ? 'bg-slate-800/50 border-purple-500/50 text-white focus:border-purple-400 focus:ring-purple-500/50'
+                            : 'bg-white border-orange-400/50 text-gray-900 focus:border-orange-500 focus:ring-orange-400/50'
+                        }`}
                       />
                     </div>
                   </div>
 
-                  <div className="mb-4">
-                    <label className="block text-sm text-gray-400 mb-2">Quick Select Location:</label>
-                    <div className="flex flex-wrap gap-2">
+                  <div className="mb-6">
+                    <label className={`block text-sm font-semibold mb-3 ${theme === 'dark' ? 'text-purple-300' : 'text-orange-700'}`}>Quick Select Location:</label>
+                    <div className="flex flex-wrap gap-3">
                       {locations.map((loc) => (
                         <button
                           key={loc.name}
@@ -626,9 +918,13 @@
                             setLatitude(loc.lat);
                             setLongitude(loc.lon);
                           }}
-                          className="bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded px-3 py-1 text-sm flex items-center gap-1"
+                          className={`rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all transform hover:scale-105 shadow-lg border-2 ${
+                            theme === 'dark'
+                              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 border-purple-400/50 hover:shadow-purple-500/50 text-white'
+                              : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 border-orange-400/50 hover:shadow-orange-500/50 text-white'
+                          }`}
                         >
-                          <MapPin size={14} />
+                          <MapPin size={16} />
                           {loc.name}
                         </button>
                       ))}
@@ -637,25 +933,33 @@
 
                   <button
                     onClick={calculateYantras}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-medium"
+                    className={`px-8 py-3 rounded-lg font-bold text-lg transition-all transform hover:scale-105 shadow-xl text-white ${
+                      theme === 'dark'
+                        ? 'bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-600 hover:shadow-pink-500/50'
+                        : 'bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 hover:from-orange-600 hover:via-red-600 hover:to-pink-600 hover:shadow-orange-500/50'
+                    }`}
                   >
                     Calculate Dimensions
                   </button>
                 </div>
 
                 {yantras.length > 0 && (
-                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                    <div className="lg:col-span-1 bg-slate-900 border border-slate-700 rounded-lg p-4">
-                      <h3 className="text-lg font-semibold text-blue-400 mb-3">Instruments</h3>
+                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 animate-fade-in">
+                    <div className="lg:col-span-1 glass-card rounded-xl p-5 shadow-xl shadow-purple-500/20">
+                      <h3 className="text-xl font-bold gradient-text mb-4">Instruments</h3>
                       <div className="space-y-2">
                         {yantras.map((yantra, idx) => (
                           <button
                             key={idx}
                             onClick={() => setSelectedYantra(yantra)}
-                            className={`w-full text-left px-3 py-2 rounded transition ${
+                            className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-all transform hover:scale-105 ${
                               selectedYantra?.name === yantra.name
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-slate-800 hover:bg-slate-700 text-gray-300'
+                                ? theme === 'dark'
+                                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50'
+                                  : 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/50'
+                                : theme === 'dark'
+                                  ? 'bg-slate-800/50 hover:bg-slate-700/50 text-gray-300 border border-purple-500/30'
+                                  : 'bg-white/50 hover:bg-white/70 text-gray-800 border border-orange-400/30'
                             }`}
                           >
                             {yantra.name}
@@ -666,15 +970,19 @@
 
                     {selectedYantra && (
                       <div className="lg:col-span-3 space-y-6">
-                        <div className="bg-slate-900 border border-slate-700 rounded-lg p-6">
-                          <h2 className="text-2xl font-bold text-blue-400 mb-2">{selectedYantra.name}</h2>
-                          <p className="text-gray-400 mb-4">{selectedYantra.description}</p>
+                        <div className="glass-card rounded-xl p-6 shadow-xl shadow-purple-500/20">
+                          <h2 className="text-3xl font-bold gradient-text mb-3">{selectedYantra.name}</h2>
+                          <p className={`text-lg mb-6 ${theme === 'dark' ? 'text-purple-200' : 'text-orange-800'}`}>{selectedYantra.description}</p>
                           
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                             {Object.entries(selectedYantra.dimensions).map(([key, value]) => (
-                              <div key={key} className="bg-slate-800 rounded p-3">
-                                <div className="text-xs text-gray-500 uppercase">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
-                                <div className="text-lg font-mono text-blue-400">
+                              <div key={key} className={`rounded-lg p-4 border-2 transition-all transform hover:scale-105 shadow-lg ${
+                                theme === 'dark'
+                                  ? 'bg-gradient-to-br from-purple-900/40 to-indigo-900/40 border-purple-500/30 hover:border-purple-400/50'
+                                  : 'bg-gradient-to-br from-orange-100 to-yellow-100 border-orange-400/30 hover:border-orange-500/50'
+                              }`}>
+                                <div className={`text-xs font-semibold uppercase tracking-wide mb-1 ${theme === 'dark' ? 'text-purple-300' : 'text-orange-700'}`}>{key.replace(/([A-Z])/g, ' $1').trim()}</div>
+                                <div className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
                                   {typeof value === 'number' ? value.toFixed(2) : value}
                                   {typeof value === 'number' && !key.includes('ngle') && !key.includes('ivision') && !key.includes('umber') ? 'm' : ''}
                                   {key.includes('ngle') ? '°' : ''}
@@ -684,21 +992,50 @@
                           </div>
                         </div>
 
+                        {selectedYantra.detailedInfo && (
+                          <div className="glass-card rounded-xl p-6 shadow-xl shadow-purple-500/20">
+                            <h3 className="text-2xl font-bold gradient-text mb-4">Detailed Information</h3>
+                            <div className="space-y-4">
+                              <div>
+                                <h4 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-purple-300' : 'text-orange-700'}`}>Purpose</h4>
+                                <p className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}>{selectedYantra.detailedInfo.purpose}</p>
+                              </div>
+                              <div>
+                                <h4 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-purple-300' : 'text-orange-700'}`}>Construction</h4>
+                                <p className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}>{selectedYantra.detailedInfo.construction}</p>
+                              </div>
+                              <div>
+                                <h4 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-purple-300' : 'text-orange-700'}`}>Usage</h4>
+                                <p className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}>{selectedYantra.detailedInfo.usage}</p>
+                              </div>
+                              <div>
+                                <h4 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-purple-300' : 'text-orange-700'}`}>Accuracy</h4>
+                                <p className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}>{selectedYantra.detailedInfo.accuracy}</p>
+                              </div>
+                              <div>
+                                <h4 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-purple-300' : 'text-orange-700'}`}>Historical Context</h4>
+                                <p className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}>{selectedYantra.detailedInfo.historicalContext}</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="bg-slate-900 border border-slate-700 rounded-lg p-4">
-                            <h3 className="text-lg font-semibold text-blue-400 mb-3 flex items-center gap-2">
-                              <Ruler size={20} />
+                          <div className="glass-card rounded-xl p-5 shadow-xl shadow-purple-500/20">
+                            <h3 className="text-xl font-bold gradient-text mb-4 flex items-center gap-2">
+                              <Ruler size={24} className={theme === 'dark' ? 'text-purple-400' : 'text-orange-600'} />
                               2D Diagram
                             </h3>
-                            <DiagramGenerator yantra={selectedYantra} />
+                            <DiagramGenerator yantra={selectedYantra} theme={theme} />
                           </div>
 
-                          <div className="bg-slate-900 border border-slate-700 rounded-lg p-4">
-                            <h3 className="text-lg font-semibold text-blue-400 mb-3 flex items-center gap-2">
-                              <Box size={20} />
-                              3D Model (Drag to rotate, scroll to zoom)
+                          <div className="glass-card rounded-xl p-5 shadow-xl shadow-purple-500/20">
+                            <h3 className="text-xl font-bold gradient-text mb-4 flex items-center gap-2">
+                              <Box size={24} className={theme === 'dark' ? 'text-purple-400' : 'text-orange-600'} />
+                              3D Model
                             </h3>
-                            <Model3D yantra={selectedYantra} />
+                            <p className={`text-sm mb-3 italic ${theme === 'dark' ? 'text-purple-300' : 'text-orange-700'}`}>🖱️ Drag to rotate • 🔍 Scroll to zoom</p>
+                            <Model3D yantra={selectedYantra} theme={theme} />
                           </div>
                         </div>
                       </div>
